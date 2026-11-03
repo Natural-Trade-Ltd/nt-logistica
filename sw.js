@@ -1,5 +1,5 @@
 // Portal de Logística — service worker (HTML siempre de red; las actualizaciones llegan solas)
-const CACHE='lg-v1';
+const CACHE='lg-v2';
 const SHELL=['./','index.html','manifest.webmanifest','icon.svg'];
 self.addEventListener('install',e=>{ self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{})); });
 self.addEventListener('activate',e=>{ e.waitUntil((async()=>{ const ks=await caches.keys();

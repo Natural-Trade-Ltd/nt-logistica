@@ -438,6 +438,7 @@ async function enviar(tipo){
       hs_code:val('#f_hs')||null });
   }
   await sb.from('lg_evento').insert({ ticket_id:tk.id, tipo:'estado', estado, por_email:me.email, nota:'Solicitud creada' });
+  try{ sb.functions.invoke('lg-notify',{body:{ticket_id:tk.id}}); }catch(e){}   // avisa por correo a los responsables (+ copia a supervisores)
   toast('Solicitud #'+tk.folio+' enviada'+(asg.length?(' · '+asg.map(nombreDe).join(', ')):''));
   await load(); view={name:'ticket',id:tk.id}; render();
 }
