@@ -1,0 +1,12 @@
+{
+  "name": "Portal de Logística · NT/GF",
+  "short_name": "Logística",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2EDE3",
+  "theme_color": "#587F6B",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

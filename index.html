@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Logística · Natural Trade / Global Forest</title>
+<meta name="theme-color" content="#F2EDE3">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<style>
+  /* ===== Dueto Tierra — tokens ===== */
+  :root{
+    --bg:#F2EDE3; --card:#FBF8F1; --line:#E0D8C8; --ink:#3A3129; --sub:#71655A; --faint:#9C8F80;
+    --acc:#587F6B; --accInk:#F6FBF7; --acc2:#8A6F5B;
+    --riesgo:#AE4E2B; --alerta:#9A6A12; --info:#3D6F9E; --ok:#587F6B;
+    --okBg:#E4EDE7; --alertaBg:#F5EBD6; --riesgoBg:#F6E3DA; --infoBg:#E4EDF6;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+    --shadow:0 1px 2px rgba(58,49,41,.05),0 10px 30px rgba(58,49,41,.07);
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#1A1713; --card:#241F1A; --line:#3A322A; --ink:#F0EAE0; --sub:#BCAFA0; --faint:#8D8072;
+    --acc:#8FB89F; --accInk:#17241C; --acc2:#C9A87F;
+    --riesgo:#E0785A; --alerta:#E0B463; --info:#7FA8D8; --ok:#8FB89F;
+    --okBg:#1E2E24; --alertaBg:#33291A; --riesgoBg:#33211B; --infoBg:#1C2836;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.45);
+  }}
+  :root[data-theme="dark"]{
+    --bg:#1A1713; --card:#241F1A; --line:#3A322A; --ink:#F0EAE0; --sub:#BCAFA0; --faint:#8D8072;
+    --acc:#8FB89F; --accInk:#17241C; --acc2:#C9A87F;
+    --riesgo:#E0785A; --alerta:#E0B463; --info:#7FA8D8; --ok:#8FB89F;
+    --okBg:#1E2E24; --alertaBg:#33291A; --riesgoBg:#33211B; --infoBg:#1C2836;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 14px 34px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;min-height:100vh}
+  h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.01em;text-wrap:balance;margin:0}
+  a{color:var(--acc);text-decoration:none}
+  button{font-family:inherit}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .mono{font-family:var(--mono)}
+
+  /* top bar */
+  header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:14px 20px;
+    background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+  .mark{width:30px;height:30px;border-radius:8px;background:var(--acc);display:grid;place-items:center;flex:none}
+  .mark svg{width:17px;height:17px}
+  .bname{font-family:var(--serif);font-size:17px;color:var(--ink);line-height:1}
+  .bsub{font-size:11px;color:var(--faint);letter-spacing:.04em}
+  .spacer{flex:1}
+  .iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+    color:var(--sub);cursor:pointer;display:grid;place-items:center;font-size:15px}
+  .iconbtn:hover{color:var(--ink)}
+  .who{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--sub)}
+  .av{width:30px;height:30px;border-radius:50%;background:var(--acc2);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:600}
+
+  .wrap{max-width:980px;margin:0 auto;padding:22px 20px 60px}
+
+  /* hero */
+  .hero{margin:6px 0 22px}
+  .hero .rule{width:60px;height:3px;background:var(--acc2);border-radius:3px;margin:10px 0 14px}
+  .hero h1{font-size:30px}
+  .hero p{color:var(--sub);max-width:60ch;margin:6px 0 0}
+
+  /* tiles */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:620px){.tiles{grid-template-columns:1fr}}
+  .tile{display:flex;gap:14px;align-items:flex-start;text-align:left;padding:20px;border:1px solid var(--line);
+    border-radius:16px;background:var(--card);box-shadow:var(--shadow);cursor:pointer;transition:transform .12s,border-color .12s}
+  .tile:hover{transform:translateY(-2px);border-color:var(--acc)}
+  .tile .tic{width:46px;height:46px;border-radius:12px;background:var(--okBg);display:grid;place-items:center;flex:none}
+  .tile .tic svg{width:24px;height:24px;stroke:var(--acc);fill:none;stroke-width:1.6}
+  .tile h3{font-size:18px}
+  .tile p{margin:3px 0 0;font-size:13px;color:var(--sub)}
+
+  .sec{margin-top:30px}
+  .sechead{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .sechead h2{font-size:20px}
+  .sechead .count{font-size:12px;color:var(--faint)}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .segb{padding:6px 12px;border:1px solid var(--line);background:var(--card);color:var(--sub);border-radius:999px;
+    font-size:12.5px;cursor:pointer}
+  .segb.on{background:var(--acc);border-color:var(--acc);color:var(--accInk)}
+
+  /* ticket rows */
+  .tklist{display:flex;flex-direction:column;gap:9px}
+  .tkrow{display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid var(--line);border-radius:14px;
+    background:var(--card);cursor:pointer}
+  .tkrow:hover{border-color:var(--acc)}
+  .tkrow .folio{font-family:var(--mono);font-size:12px;color:var(--faint);flex:none;width:52px}
+  .tkrow .tkmid{flex:1;min-width:0}
+  .tkrow .tktit{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tkrow .tkmeta{font-size:12px;color:var(--sub);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chip{font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap;flex:none}
+  .chip.emitida{background:var(--alertaBg);color:var(--alerta)}
+  .chip.asignada{background:var(--infoBg);color:var(--info)}
+  .chip.en_proceso{background:var(--okBg);color:var(--acc2)}
+  .chip.respondida{background:var(--okBg);color:var(--ok)}
+  .chip.cerrada{background:transparent;color:var(--faint);border:1px solid var(--line)}
+  .empty{padding:26px;text-align:center;color:var(--faint);border:1px dashed var(--line);border-radius:14px}
+
+  /* forms */
+  .card2{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:22px}
+  label.fl{display:block;font-size:12px;font-weight:600;color:var(--sub);margin:16px 0 6px;letter-spacing:.02em}
+  input.ti,select.ti,textarea.ti{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--ink);
+    border-radius:12px;padding:11px 12px;font-size:14px;font-family:inherit;outline:none}
+  input.ti:focus,select.ti:focus,textarea.ti:focus{border-color:var(--acc)}
+  textarea.ti{min-height:84px;resize:vertical}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row2{grid-template-columns:1fr}}
+  .choices{display:flex;gap:8px;flex-wrap:wrap}
+  .choice{padding:10px 15px;border:1px solid var(--line);background:var(--bg);border-radius:12px;cursor:pointer;font-size:14px;color:var(--sub)}
+  .choice.on{background:var(--acc);border-color:var(--acc);color:var(--accInk);font-weight:600}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--acc);color:var(--accInk);
+    border:none;border-radius:12px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn:hover{filter:brightness(1.05)}
+  .btn.ghost{background:transparent;color:var(--sub);border:1px solid var(--line)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+  .note{font-size:12.5px;color:var(--sub);background:var(--infoBg);border:1px solid color-mix(in srgb,var(--info) 25%,transparent);
+    border-radius:12px;padding:10px 12px;margin-top:10px}
+  .route{font-size:13px;background:var(--okBg);border:1px solid color-mix(in srgb,var(--acc) 30%,transparent);border-radius:12px;
+    padding:10px 13px;margin-top:14px;color:var(--ink)}
+  .route b{font-weight:600}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--sub);cursor:pointer;font-size:13px;margin-bottom:14px}
+
+  /* detalle / timeline */
+  .deta{display:grid;gap:14px}
+  .kv{display:flex;gap:10px;font-size:14px;padding:4px 0}
+  .kv .k{color:var(--faint);min-width:120px;flex:none}
+  .tl{position:relative;padding-left:22px}
+  .tl::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .tli{position:relative;padding:0 0 16px}
+  .tli::before{content:"";position:absolute;left:-19px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--acc);border:2px solid var(--card)}
+  .tli .when{font-size:11.5px;color:var(--faint)}
+  .tli .what{font-size:14px;margin-top:1px}
+  .tli .who2{font-size:12px;color:var(--sub)}
+
+  /* gate */
+  .gate{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .gcard{max-width:420px;width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;
+    box-shadow:var(--shadow);padding:34px 30px;text-align:center}
+  .gcard .mark{width:48px;height:48px;border-radius:12px;margin:0 auto 16px}
+  .gcard .mark svg{width:26px;height:26px}
+  .gcard h2{font-size:23px;margin-bottom:6px}
+  .gcard p{color:var(--sub);font-size:14px;margin:0 0 22px}
+  .gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--card);
+    border:1px solid var(--line);border-radius:12px;padding:13px;font-size:14.5px;font-weight:600;color:var(--ink);cursor:pointer}
+  .gbtn:hover{border-color:var(--acc)}
+  .gmsg{margin-top:16px;font-size:13px}
+  .gmsg.err{color:var(--riesgo)} .gmsg.ok{color:var(--ok)}
+  .hidden{display:none!important}
+
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);opacity:0;z-index:60;
+    background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-size:13px;transition:.3s;pointer-events:none;box-shadow:var(--shadow)}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ===== GATE ===== -->
+<div id="gate" class="gate">
+  <div class="gcard">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#F6FBF7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
+    <h2>Portal de Logística</h2>
+    <p>Solicitudes y seguimiento con el equipo de Logística — NT / GF.</p>
+    <button class="gbtn" id="gbtn">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.6 2.4 30.1 0 24 0 14.6 0 6.4 5.4 2.6 13.2l7.9 6.1C12.3 13.1 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.2-.4-4.7H24v9h12.4c-.5 2.9-2.1 5.4-4.6 7.1l7.1 5.5c4.2-3.9 6.7-9.6 6.7-16.9z"/><path fill="#FBBC05" d="M10.5 28.3c-.5-1.5-.8-3.1-.8-4.8s.3-3.3.8-4.8l-7.9-6.1C1 15.6 0 19.6 0 24s1 8.4 2.6 11.4l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.1 0 11.3-2 15.1-5.5l-7.1-5.5c-2 1.3-4.6 2.1-8 2.1-6.3 0-11.7-3.6-13.5-8.8l-7.9 6.1C6.4 42.6 14.6 48 24 48z"/></svg>
+      Continuar con Google
+    </button>
+    <div class="gmsg" id="gmsg"></div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app" class="hidden">
+  <header class="top">
+    <div class="brand" id="homeBtn">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#F6FBF7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
+      <div><div class="bname">Natural Trade</div><div class="bsub">Logística · GF</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="themeBtn" title="Tema claro / oscuro">◐</button>
+    <div class="who"><span class="av" id="av"></span><span id="whoName"></span></div>
+    <button class="iconbtn" id="outBtn" title="Cerrar sesión">⏻</button>
+  </header>
+  <div class="wrap" id="view"></div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const SB_URL='https://pddqdfgwnhkojlnjcwzj.supabase.co';
+const SB_KEY='sb_publishable_dx3xOfvKAexeUSqJ_3jVkw_LdUKuXLt';
+const sb=createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=s=>document.querySelector(s);
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nowISO=()=>new Date().toISOString();
+
+// ===== estado =====
+let me=null, tickets=[], ruteo=[], hscodes=[], team=[];
+let view={name:'home'}, filtroEstado='activas';
+
+// ===== catálogos =====
+const TIPOS={
+  cotizacion:{t:'Cotización de flete', d:'Marítimo, contenedor, camión o ferrocarril — con origen, destino e incoterms.'},
+  status_embarque:{t:'Status de embarque', d:'Dónde va tu embarque y para cuándo llega.'},
+  status_reclamo:{t:'Status de reclamo', d:'Seguimiento de un reclamo o confronta abierta.'},
+  cambio_tarifa:{t:'Cambio de tarifa', d:'Avisos de cambios de tarifa de Logística hacia el equipo.'}
+};
+const TRANSP={maritimo:'Marítimo',camion:'Camión',ferrocarril:'Ferrocarril'};
+const ZONAS={mexico:'México',usa_canada:'USA / Canadá'};
+const INCOTERMS=['EXW','FCA','FOB','FAS','CFR','CIF','CPT','CIP','DAP','DPU','DDP'];
+const UNID=['m³','MBF','pies tablares','kg','toneladas','contenedores','furgones'];
+const EST_LBL={emitida:'Emitida',asignada:'Asignada',en_proceso:'En proceso',respondida:'Respondida',cerrada:'Cerrada'};
+const ICON={
+  cotizacion:'<path d="M9 3h6l5 5v13H4V3h5z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h5"/>',
+  status_embarque:'<path d="M3 17l2-5h14l2 5"/><path d="M5 17v-7h9l3 3"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="17" cy="18.5" r="1.5"/>',
+  status_reclamo:'<path d="M12 3l9 16H3L12 3z"/><path d="M12 10v4M12 17h.01"/>',
+  cambio_tarifa:'<path d="M20 12l-8 8-9-9V3h8l9 9z"/><circle cx="7.5" cy="7.5" r="1.3"/>'
+};
+const svg=(p)=>'<svg viewBox="0 0 24 24">'+p+'</svg>';
+
+// ===== auth =====
+async function route(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session){ showGate(); return; }
+  const email=(session.user.email||'').toLowerCase();
+  const { data:emp, error } = await sb.from('lg_employee').select('*').eq('email',email).maybeSingle();
+  if(error){ gmsg('El servicio está iniciando, espera unos segundos y vuelve a tocar «Continuar con Google».','err'); showGate(); return; }
+  if(!emp || !emp.activo){ gmsg('Tu correo ('+email+') aún no tiene acceso. Pide a Jorge o Nina que te den de alta.','err'); showGate(); await sb.auth.signOut(); return; }
+  me=emp; await enterApp(session);
+}
+function showGate(){ $('#app').classList.add('hidden'); $('#gate').classList.remove('hidden'); }
+function gmsg(t,k){ const e=$('#gmsg'); e.textContent=t||''; e.className='gmsg'+(k?(' '+k):''); }
+$('#gbtn').addEventListener('click',async()=>{
+  gmsg('Abriendo Google…');
+  const redirectTo=location.href.split('#')[0].split('?')[0];
+  const { error }=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo,queryParams:{prompt:'select_account'}}});
+  if(error) gmsg(error.message,'err');
+});
+
+async function enterApp(session){
+  $('#gate').classList.add('hidden'); $('#app').classList.remove('hidden');
+  history.replaceState(null,'',location.pathname);
+  $('#whoName').textContent=me.nombre||me.email;
+  $('#av').textContent=(me.nombre||me.email||'?').trim().slice(0,1).toUpperCase();
+  await load(); render();
+  // realtime: refresca al cambiar tickets/eventos
+  sb.channel('lg').on('postgres_changes',{event:'*',schema:'public',table:'lg_ticket'},refreshSoft)
+    .on('postgres_changes',{event:'*',schema:'public',table:'lg_evento'},refreshSoft).subscribe();
+}
+let softT; function refreshSoft(){ clearTimeout(softT); softT=setTimeout(async()=>{ await load(); render(); },600); }
+
+// ===== data =====
+async function load(){
+  const [t,r,h,e]=await Promise.all([
+    sb.from('lg_ticket').select('*').order('creado_en',{ascending:false}),
+    sb.from('lg_ruteo').select('*'),
+    sb.from('lg_hs_code').select('code,descripcion').eq('activo',true).order('code'),
+    sb.from('lg_employee').select('email,nombre,rol').eq('activo',true)
+  ]);
+  tickets=t.data||[]; ruteo=r.data||[]; hscodes=h.data||[]; team=e.data||[];
+}
+const esLog=()=>me&&(me.rol==='logistica'||me.rol==='admin');
+const nombreDe=em=>{const u=team.find(x=>x.email===em);return u?(u.nombre||em.split('@')[0]):em.split('@')[0];};
+function matchRuteo(tipo,transporte,region){
+  let best=null,bs=-1;
+  ruteo.filter(r=>r.tipo===tipo&&r.activo!==false).forEach(r=>{
+    let s=0;
+    if(r.transporte){ if(r.transporte===transporte)s+=2; else return; }
+    if(r.region){ if(r.region===region)s+=1; else return; }
+    if(s>bs){bs=s;best=r;}
+  });
+  return best?(best.asignados||[]):[];
+}
+function fmtFecha(iso){ if(!iso)return''; const d=new Date(iso);
+  return d.toLocaleDateString('es-MX',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+function hace(iso){ if(!iso)return''; const s=(Date.now()-new Date(iso).getTime())/1000;
+  if(s<60)return'hace un momento'; const m=Math.floor(s/60); if(m<60)return'hace '+m+' min';
+  const h=Math.floor(m/60); if(h<24)return'hace '+h+' h'; const d=Math.floor(h/24); return'hace '+d+' d'; }
+function dur(a,b){ if(!a||!b)return''; let s=Math.max(0,(new Date(b)-new Date(a))/1000);
+  const h=Math.floor(s/3600),m=Math.floor(s%3600/60); return h>0?(h+'h '+m+'m'):(m+'m'); }
+
+// ===== render =====
+function render(){
+  const v=$('#view');
+  if(view.name==='home') return renderHome(v);
+  if(view.name==='form') return renderForm(v,view.tipo);
+  if(view.name==='ticket') return renderTicket(v,view.id);
+}
+function backBtn(){ return '<div class="back" id="back">‹ Volver</div>'; }
+function wireBack(){ const b=$('#back'); if(b)b.addEventListener('click',()=>{view={name:'home'};render();}); }
+
+function renderHome(v){
+  const mios=tickets; // RLS ya filtra (solicitante ve lo suyo, logística ve todo)
+  const act=mios.filter(t=>t.estado!=='cerrada'&&t.estado!=='respondida');
+  const list=filtroEstado==='activas'?act:(filtroEstado==='todas'?mios:mios.filter(t=>t.estado===filtroEstado));
+  v.innerHTML=
+    '<div class="hero"><div class="eyebrow">Portal de Logística</div><div class="rule"></div>'+
+      '<h1>¿Qué necesitas hoy?</h1><p>Levanta tu solicitud y sigue su avance en tiempo real. '+(esLog()?'Como Logística, ves y atiendes todas las solicitudes del equipo.':'Tu solicitud llega directo a quien corresponde.')+'</p></div>'+
+    '<div class="tiles">'+Object.keys(TIPOS).map(k=>
+      '<button class="tile" data-tipo="'+k+'"><div class="tic">'+svg(ICON[k])+'</div><div><h3>'+esc(TIPOS[k].t)+'</h3><p>'+esc(TIPOS[k].d)+'</p></div></button>').join('')+'</div>'+
+    '<div class="sec"><div class="sechead"><h2>'+(esLog()?'Solicitudes del equipo':'Mis solicitudes')+'</h2><span class="count">'+mios.length+' en total</span></div>'+
+      '<div class="seg" style="margin-bottom:12px">'+
+        ['activas|Activas','todas|Todas','emitida|Emitidas','en_proceso|En proceso','respondida|Respondidas','cerrada|Cerradas'].map(o=>{const[k,l]=o.split('|');
+          return '<div class="segb'+(filtroEstado===k?' on':'')+'" data-f="'+k+'">'+l+'</div>';}).join('')+'</div>'+
+      '<div class="tklist" id="tklist"></div></div>';
+  v.querySelectorAll('[data-tipo]').forEach(b=>b.addEventListener('click',()=>{view={name:'form',tipo:b.dataset.tipo};render();}));
+  v.querySelectorAll('[data-f]').forEach(b=>b.addEventListener('click',()=>{filtroEstado=b.dataset.f;render();}));
+  const tl=$('#tklist');
+  if(!list.length){ tl.innerHTML='<div class="empty">Sin solicitudes aquí. Toca un cuadro de arriba para crear una.</div>'; return; }
+  tl.innerHTML=list.map(t=>{
+    const meta=[TIPOS[t.tipo]?.t, t.transporte?TRANSP[t.transporte]:null, t.region?ZONAS[t.region]:null,
+      (esLog()&&t.solicitante_email!==me.email)?('de '+nombreDe(t.solicitante_email)):null,
+      t.asignados&&t.asignados.length?('→ '+t.asignados.map(nombreDe).join(', ')):null].filter(Boolean).join(' · ');
+    return '<div class="tkrow" data-id="'+t.id+'"><span class="folio">#'+t.folio+'</span>'+
+      '<div class="tkmid"><div class="tktit">'+esc(t.titulo||TIPOS[t.tipo]?.t||'Solicitud')+'</div>'+
+      '<div class="tkmeta">'+esc(meta)+' · '+hace(t.creado_en)+'</div></div>'+
+      '<span class="chip '+t.estado+'">'+(EST_LBL[t.estado]||t.estado)+'</span></div>';}).join('');
+  tl.querySelectorAll('[data-id]').forEach(r=>r.addEventListener('click',()=>{view={name:'ticket',id:r.dataset.id};render();}));
+}
+
+// ===== formularios =====
+let F={}; // borrador del formulario
+function renderForm(v,tipo){
+  F={tipo, transporte:'', region:'', prioridad:'normal', volumen_tipo:'estimado', volumen_modo:'transportes'};
+  if(tipo==='cambio_tarifa' && !esLog()){
+    const avisos=tickets.filter(t=>t.tipo==='cambio_tarifa');
+    v.innerHTML=backBtn()+'<div class="hero"><div class="eyebrow">Cambio de tarifa</div><div class="rule"></div><h1>Avisos de tarifa</h1>'+
+      '<p>Aquí Logística publica los cambios de tarifa. Por ahora es solo lectura para tu perfil.</p></div>'+
+      '<div class="tklist">'+(avisos.length?avisos.map(t=>'<div class="tkrow" data-id="'+t.id+'"><span class="folio">#'+t.folio+'</span><div class="tkmid"><div class="tktit">'+esc(t.titulo||'Cambio de tarifa')+'</div><div class="tkmeta">'+hace(t.creado_en)+'</div></div><span class="chip '+t.estado+'">'+(EST_LBL[t.estado]||t.estado)+'</span></div>').join(''):'<div class="empty">Aún no hay avisos de cambio de tarifa.</div>')+'</div>';
+    wireBack(); v.querySelectorAll('[data-id]').forEach(r=>r.addEventListener('click',()=>{view={name:'ticket',id:r.dataset.id};render();}));
+    return;
+  }
+  const hsField = hscodes.length
+    ? '<select class="ti" id="f_hs"><option value="">— Elige HS Code —</option>'+hscodes.map(h=>'<option value="'+esc(h.code)+'">'+esc(h.code)+(h.descripcion?(' · '+esc(h.descripcion)):'')+'</option>').join('')+'</select>'
+    : '<input class="ti" id="f_hs" placeholder="Código HS (el catálogo de NetSuite se sincroniza pronto)">';
+
+  let body='';
+  const transpSel='<label class="fl">Transporte</label><div class="choices" id="f_transp">'+Object.keys(TRANSP).map(k=>'<div class="choice" data-v="'+k+'">'+TRANSP[k]+'</div>').join('')+'</div>'+
+    '<div id="f_zonaWrap" class="hidden"><label class="fl">Zona</label><div class="choices" id="f_zona">'+Object.keys(ZONAS).map(k=>'<div class="choice" data-v="'+k+'">'+ZONAS[k]+'</div>').join('')+'</div></div>';
+
+  if(tipo==='cotizacion'){
+    body=transpSel+
+      '<div class="row2"><div><label class="fl">Origen</label><input class="ti" id="f_origen" placeholder="Ciudad / puerto / cruce"></div>'+
+      '<div><label class="fl">Destino</label><input class="ti" id="f_destino" placeholder="Ciudad / puerto / cruce"></div></div>'+
+      '<div class="row2"><div><label class="fl">Incoterm de compra</label><select class="ti" id="f_inco_c"><option value="">—</option>'+INCOTERMS.map(i=>'<option>'+i+'</option>').join('')+'</select></div>'+
+      '<div><label class="fl">Incoterm de venta</label><select class="ti" id="f_inco_v"><option value="">—</option>'+INCOTERMS.map(i=>'<option>'+i+'</option>').join('')+'</select></div></div>'+
+      '<label class="fl">Volumen</label><div class="choices" style="margin-bottom:8px"><div class="choice on" data-vt="estimado">Estimado</div><div class="choice" data-vt="real">Real</div></div>'+
+      '<div class="choices" style="margin-bottom:8px" id="f_vmodo"><div class="choice on" data-vm="transportes"># de transportes</div><div class="choice" data-vm="material">Volumen de material</div></div>'+
+      '<div class="row2"><div><input class="ti" id="f_vval" type="number" step="any" placeholder="Cantidad"></div>'+
+      '<div><select class="ti" id="f_vuni"><option value="transportes">transportes</option>'+UNID.map(u=>'<option>'+u+'</option>').join('')+'</select></div></div>'+
+      '<label class="fl">HS Code</label>'+hsField+
+      '<div class="note" id="f_mc">Al poner transporte, origen y destino te diré si <b>ya tenemos esta ruta en el Master Cost</b>. <span style="opacity:.75">(La verificación con la Matriz se conecta en el siguiente paso.)</span></div>'+
+      '<label class="fl">Notas (opcional)</label><textarea class="ti" id="f_notas" placeholder="Detalles, fechas, condiciones…"></textarea>';
+  } else if(tipo==='status_embarque'){
+    body=transpSel+
+      '<label class="fl">Referencia del embarque</label><input class="ti" id="f_ref" placeholder="SO / # de embarque / contenedor / BL">'+
+      '<label class="fl">¿Qué necesitas saber?</label><textarea class="ti" id="f_notas" placeholder="Ubicación, ETA, documentos…"></textarea>';
+  } else if(tipo==='status_reclamo'){
+    body='<label class="fl">Referencia del reclamo / embarque</label><input class="ti" id="f_ref" placeholder="# de reclamo, SO o embarque relacionado">'+
+      '<label class="fl">¿Quién lo llevó originalmente? (opcional)</label><select class="ti" id="f_resp"><option value="">— Logística lo asigna —</option>'+team.filter(u=>u.rol==='logistica'||u.rol==='admin').map(u=>'<option value="'+esc(u.email)+'">'+esc(u.nombre||u.email)+'</option>').join('')+'</select>'+
+      '<label class="fl">Detalle</label><textarea class="ti" id="f_notas" placeholder="Describe el reclamo / confronta y qué necesitas…"></textarea>';
+  } else if(tipo==='cambio_tarifa'){ // logística publica
+    body=transpSel+
+      '<div class="row2"><div><label class="fl">Origen</label><input class="ti" id="f_origen" placeholder="Ruta origen"></div>'+
+      '<div><label class="fl">Destino</label><input class="ti" id="f_destino" placeholder="Ruta destino"></div></div>'+
+      '<label class="fl">Detalle del cambio</label><textarea class="ti" id="f_notas" placeholder="Tarifa anterior → nueva, vigencia, motivo…"></textarea>';
+  }
+
+  v.innerHTML=backBtn()+'<div class="hero"><div class="eyebrow">Nueva solicitud</div><div class="rule"></div><h1>'+esc(TIPOS[tipo].t)+'</h1></div>'+
+    '<div class="card2">'+
+      '<label class="fl">Título corto</label><input class="ti" id="f_titulo" placeholder="'+(tipo==='cotizacion'?'Ej. Flete FFCC Monterrey → Chicago':'Ej. Status SO-12345')+'">'+
+      body+
+      '<div class="route hidden" id="f_route"></div>'+
+      '<div style="display:flex;gap:10px;margin-top:20px"><button class="btn" id="f_send">Enviar solicitud</button><button class="btn ghost" id="f_cancel">Cancelar</button></div>'+
+    '</div>';
+  wireBack();
+  // transporte / zona
+  v.querySelectorAll('#f_transp .choice').forEach(c=>c.addEventListener('click',()=>{
+    F.transporte=c.dataset.v; v.querySelectorAll('#f_transp .choice').forEach(x=>x.classList.toggle('on',x===c));
+    const needZona=(F.transporte==='camion'||F.transporte==='ferrocarril');
+    $('#f_zonaWrap').classList.toggle('hidden',!needZona); if(!needZona)F.region='';
+    updateRoute(tipo);
+  }));
+  const fz=$('#f_zona'); if(fz)fz.querySelectorAll('.choice').forEach(c=>c.addEventListener('click',()=>{
+    F.region=c.dataset.v; fz.querySelectorAll('.choice').forEach(x=>x.classList.toggle('on',x===c)); updateRoute(tipo);}));
+  // volumen toggles
+  v.querySelectorAll('[data-vt]').forEach(c=>c.addEventListener('click',()=>{F.volumen_tipo=c.dataset.vt;v.querySelectorAll('[data-vt]').forEach(x=>x.classList.toggle('on',x===c));}));
+  v.querySelectorAll('[data-vm]').forEach(c=>c.addEventListener('click',()=>{F.volumen_modo=c.dataset.vm;v.querySelectorAll('[data-vm]').forEach(x=>x.classList.toggle('on',x===c));
+    const uni=$('#f_vuni'); if(uni)uni.value=(c.dataset.vm==='transportes'?'transportes':'m³');}));
+  const oc=$('#f_origen'),dc=$('#f_destino'); if(oc)oc.addEventListener('input',()=>updateRoute(tipo)); if(dc)dc.addEventListener('input',()=>updateRoute(tipo));
+  $('#f_cancel').addEventListener('click',()=>{view={name:'home'};render();});
+  $('#f_send').addEventListener('click',()=>enviar(tipo));
+  updateRoute(tipo);
+}
+function updateRoute(tipo){
+  const asg=matchRuteo(tipo,F.transporte,F.region);
+  const box=$('#f_route'); if(!box)return;
+  if(asg.length){ box.classList.remove('hidden');
+    box.innerHTML='Esta solicitud se enviará a <b>'+asg.map(nombreDe).join(', ')+'</b>'+(me&&['nina@naturaltrade.ca','jorge@naturaltrade.ca'].includes(me.email)?'':'<span style="color:var(--faint)"> · con copia a Jorge y Nina</span>'); }
+  else if(tipo==='status_reclamo'){ box.classList.remove('hidden'); box.innerHTML='Logística lo asignará a quien llevó el tema.'; }
+  else box.classList.add('hidden');
+  // indicador master cost (placeholder honesto)
+  const mc=$('#f_mc'); if(mc && tipo==='cotizacion'){
+    const o=($('#f_origen')||{}).value, d=($('#f_destino')||{}).value;
+    if(F.transporte && o && d) mc.innerHTML='Ruta <b>'+esc(o)+' → '+esc(d)+'</b> ('+(TRANSP[F.transporte]||'')+'). La verificación con el Master Cost de la Matriz se conecta en el siguiente paso; por ahora Logística la revisa al cotizar.';
+  }
+}
+async function enviar(tipo){
+  const val=id=>{const e=$(id);return e?e.value.trim():'';};
+  const titulo=val('#f_titulo')||TIPOS[tipo].t;
+  if((tipo==='cotizacion'||tipo==='status_embarque'||tipo==='cambio_tarifa') && !F.transporte){ toast('Elige el tipo de transporte'); return; }
+  const btn=$('#f_send'); btn.disabled=true; btn.textContent='Enviando…';
+  const asignados=matchRuteo(tipo,F.transporte,F.region);
+  let asg=asignados.slice();
+  if(tipo==='status_reclamo'){ const r=val('#f_resp'); if(r)asg=[r]; }
+  const estado=asg.length?'asignada':'emitida';
+  const { data:tk, error }=await sb.from('lg_ticket').insert({
+    tipo, titulo, descripcion:val('#f_notas'), solicitante_email:me.email,
+    transporte:F.transporte||null, region:F.region||null, referencia:val('#f_ref')||null,
+    asignados:asg, asignado_a:asg[0]||null, estado, prioridad:F.prioridad||'normal',
+    origen_flujo: tipo==='cambio_tarifa'?'logistica':'usuario',
+    asignado_en: asg.length?nowISO():null
+  }).select().single();
+  if(error){ btn.disabled=false; btn.textContent='Enviar solicitud'; toast('No se pudo crear: '+error.message); return; }
+  if(tipo==='cotizacion'||tipo==='cambio_tarifa'){
+    await sb.from('lg_cotizacion').insert({ ticket_id:tk.id, transporte:F.transporte||null,
+      origen:val('#f_origen')||null, destino:val('#f_destino')||null,
+      incoterm_compra:val('#f_inco_c')||null, incoterm_venta:val('#f_inco_v')||null,
+      volumen_tipo:F.volumen_tipo, volumen_modo:F.volumen_modo,
+      volumen_valor:parseFloat(val('#f_vval'))||null, volumen_unidad:val('#f_vuni')||null,
+      hs_code:val('#f_hs')||null });
+  }
+  await sb.from('lg_evento').insert({ ticket_id:tk.id, tipo:'estado', estado, por_email:me.email, nota:'Solicitud creada' });
+  toast('Solicitud #'+tk.folio+' enviada'+(asg.length?(' · '+asg.map(nombreDe).join(', ')):''));
+  await load(); view={name:'ticket',id:tk.id}; render();
+}
+
+// ===== detalle del ticket =====
+async function renderTicket(v,id){
+  const t=tickets.find(x=>x.id===id);
+  if(!t){ v.innerHTML=backBtn()+'<div class="empty">Solicitud no encontrada.</div>'; wireBack(); return; }
+  const [cot,ev]=await Promise.all([
+    (t.tipo==='cotizacion'||t.tipo==='cambio_tarifa')?sb.from('lg_cotizacion').select('*').eq('ticket_id',id).maybeSingle():Promise.resolve({data:null}),
+    sb.from('lg_evento').select('*').eq('ticket_id',id).order('en',{ascending:true})
+  ]);
+  const c=cot.data, eventos=ev.data||[];
+  const puedeGestionar=esLog()||t.asignado_a===me.email;
+  const kv=(k,val)=>val?('<div class="kv"><span class="k">'+k+'</span><span>'+esc(val)+'</span></div>'):'';
+  let det='';
+  if(c){ det=kv('Transporte',c.transporte?TRANSP[c.transporte]:'')+kv('Ruta',[c.origen,c.destino].filter(Boolean).join('  →  '))+
+    kv('Incoterm compra',c.incoterm_compra)+kv('Incoterm venta',c.incoterm_venta)+
+    kv('Volumen',[c.volumen_valor,c.volumen_unidad].filter(x=>x!=null&&x!=='').join(' ')+(c.volumen_tipo?(' ('+c.volumen_tipo+')'):''))+
+    kv('HS Code',c.hs_code); }
+  const sla=t.respondido_en?('<span class="chip respondida">Respondida en '+dur(t.creado_en,t.respondido_en)+'</span>'):'';
+  v.innerHTML=backBtn()+
+    '<div class="hero" style="margin-bottom:14px"><div class="eyebrow">'+esc(TIPOS[t.tipo]?.t||'Solicitud')+' · #'+t.folio+'</div><div class="rule"></div>'+
+      '<h1>'+esc(t.titulo||TIPOS[t.tipo]?.t)+'</h1>'+
+      '<p style="margin-top:8px"><span class="chip '+t.estado+'">'+(EST_LBL[t.estado]||t.estado)+'</span> '+sla+'</p></div>'+
+    '<div class="row2" style="align-items:start">'+
+      '<div class="card2"><div class="eyebrow" style="margin-bottom:10px">Detalle</div><div class="deta">'+
+        kv('Solicitante',nombreDe(t.solicitante_email))+
+        kv('Responsable(s)',(t.asignados&&t.asignados.length)?t.asignados.map(nombreDe).join(', '):'por asignar')+
+        kv('Referencia',t.referencia)+kv('Zona',t.region?ZONAS[t.region]:'')+det+
+        (t.descripcion?('<div class="kv"><span class="k">Descripción</span><span>'+esc(t.descripcion)+'</span></div>'):'')+
+        kv('Creada',fmtFecha(t.creado_en))+
+      '</div>'+
+      (puedeGestionar?('<div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px"><div class="eyebrow" style="margin-bottom:8px">Gestión (Logística)</div><div class="seg" id="estBtns">'+
+        ['en_proceso|Marcar en proceso','respondida|Marcar respondida','cerrada|Cerrar'].map(o=>{const[k,l]=o.split('|');return '<div class="segb" data-est="'+k+'">'+l+'</div>';}).join('')+'</div>'+
+        (esLog()?('<label class="fl">Reasignar a</label><select class="ti" id="reasg"><option value="">—</option>'+team.filter(u=>u.rol==='logistica'||u.rol==='admin').map(u=>'<option value="'+esc(u.email)+'"'+(t.asignado_a===u.email?' selected':'')+'>'+esc(u.nombre||u.email)+'</option>').join('')+'</select><button class="btn ghost" id="reasgBtn" style="margin-top:8px">Reasignar</button>'):'')+
+        '</div>'):'')+
+      '</div>'+
+      '<div class="card2"><div class="eyebrow" style="margin-bottom:12px">Seguimiento</div>'+
+        '<div class="tl">'+eventos.map(e=>'<div class="tli"><div class="when">'+fmtFecha(e.en)+' · '+hace(e.en)+'</div>'+
+          '<div class="what">'+(e.tipo==='estado'?('<b>'+(EST_LBL[e.estado]||e.estado)+'</b>'+(e.nota?(' — '+esc(e.nota)):'')):(e.tipo==='asignacion'?esc(e.nota||'Reasignado'):esc(e.nota||'')))+'</div>'+
+          '<div class="who2">'+esc(nombreDe(e.por_email||''))+'</div></div>').join('')+'</div>'+
+        '<label class="fl">Agregar comentario</label><textarea class="ti" id="coment" placeholder="Escribe una nota…"></textarea>'+
+        '<button class="btn" id="comentBtn" style="margin-top:10px">Enviar comentario</button>'+
+      '</div>'+
+    '</div>';
+  wireBack();
+  v.querySelectorAll('[data-est]').forEach(b=>b.addEventListener('click',()=>setEstado(t,b.dataset.est)));
+  const cb=$('#comentBtn'); if(cb)cb.addEventListener('click',()=>comentar(t.id,$('#coment').value));
+  const rb=$('#reasgBtn'); if(rb)rb.addEventListener('click',()=>reasignar(t,$('#reasg').value));
+}
+async function setEstado(t,nuevo){
+  const upd={estado:nuevo,actualizado_en:nowISO()};
+  if(nuevo==='respondida'&&!t.respondido_en)upd.respondido_en=nowISO();
+  if(nuevo==='cerrada')upd.cerrado_en=nowISO();
+  await sb.from('lg_ticket').update(upd).eq('id',t.id);
+  await sb.from('lg_evento').insert({ticket_id:t.id,tipo:'estado',estado:nuevo,por_email:me.email});
+  toast('Estado: '+(EST_LBL[nuevo]||nuevo)); await load(); render();
+}
+async function comentar(id,texto){ texto=(texto||'').trim(); if(!texto)return;
+  await sb.from('lg_evento').insert({ticket_id:id,tipo:'comentario',por_email:me.email,nota:texto});
+  await load(); render(); }
+async function reasignar(t,email){ if(!email)return;
+  await sb.from('lg_ticket').update({asignado_a:email,asignados:[email],estado:(t.estado==='emitida'?'asignada':t.estado),asignado_en:t.asignado_en||nowISO()}).eq('id',t.id);
+  await sb.from('lg_evento').insert({ticket_id:t.id,tipo:'asignacion',por_email:me.email,nota:'Reasignado a '+nombreDe(email)});
+  toast('Reasignado a '+nombreDe(email)); await load(); render(); }
+
+// ===== toast / tema / sesión =====
+let toastT; function toast(m){ const e=$('#toast'); e.textContent=m; e.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>e.classList.remove('show'),2600); }
+function applyTheme(t){ if(t)document.documentElement.setAttribute('data-theme',t); else document.documentElement.removeAttribute('data-theme');
+  $('#themeBtn').textContent=(t==='dark'?'☀':'◐'); }
+applyTheme(localStorage.getItem('lg_theme')||'');
+$('#themeBtn').addEventListener('click',()=>{ const cur=document.documentElement.getAttribute('data-theme');
+  const isDark=cur==='dark'||(!cur&&matchMedia('(prefers-color-scheme:dark)').matches);
+  const next=isDark?'light':'dark'; localStorage.setItem('lg_theme',next); applyTheme(next); });
+$('#homeBtn').addEventListener('click',()=>{view={name:'home'};render();});
+$('#outBtn').addEventListener('click',async()=>{ await sb.auth.signOut(); location.reload(); });
+
+sb.auth.onAuthStateChange((_e,s)=>{ if(s&&$('#app').classList.contains('hidden'))route(); });
+route();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
