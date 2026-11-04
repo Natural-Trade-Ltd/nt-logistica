@@ -200,6 +200,9 @@ const sb=createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:
 const $=s=>document.querySelector(s);
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const nowISO=()=>new Date().toISOString();
+const NS_ACCT='4830110';
+function nsTxLinks(ref){ if(!ref)return ''; return String(ref).split(/[,\n;]+/).map(s=>s.trim()).filter(Boolean)
+  .map(p=>'<a class="mono" style="color:var(--acc)" target="_blank" rel="noopener" href="https://'+NS_ACCT+'.app.netsuite.com/app/common/search/searchresults.nl?searchtype=Transaction&Transaction_NUMBERTEXT='+encodeURIComponent(p)+'">'+esc(p)+' ↗</a>').join('<br>'); }
 
 // ===== estado =====
 let me=null, tickets=[], ruteo=[], hscodes=[], team=[];
@@ -262,7 +265,7 @@ async function load(){
     sb.from('lg_ticket').select('*').order('creado_en',{ascending:false}),
     sb.from('lg_ruteo').select('*'),
     sb.from('lg_hs_code').select('code,descripcion').eq('activo',true).order('code'),
-    sb.from('lg_employee').select('email,nombre,rol').eq('activo',true)
+    sb.from('lg_employee').select('email,nombre,rol,es_salesrep').eq('activo',true)
   ]);
   tickets=t.data||[]; ruteo=r.data||[]; hscodes=h.data||[]; team=e.data||[];
 }
@@ -328,7 +331,7 @@ function renderHome(v){
 // ===== formularios =====
 let F={}; // borrador del formulario
 function renderForm(v,tipo){
-  F={tipo, transporte:'', region:'', prioridad:'normal', volumen_tipo:'estimado', volumen_modo:'transportes'};
+  F={tipo, transporte:'', region:'', prioridad:'normal', volumen_tipo:'estimado', volumen_modo:'transportes', destinatarios:[]};
   if(tipo==='cambio_tarifa' && !esLog()){
     const avisos=tickets.filter(t=>t.tipo==='cambio_tarifa');
     v.innerHTML=backBtn()+'<div class="hero"><div class="eyebrow">Cambio de tarifa</div><div class="rule"></div><h1>Avisos de tarifa</h1>'+
@@ -366,11 +369,15 @@ function renderForm(v,tipo){
     body='<label class="fl">Referencia del reclamo / embarque</label><input class="ti" id="f_ref" placeholder="# de reclamo, SO o embarque relacionado">'+
       '<label class="fl">¿Quién lo llevó originalmente? (opcional)</label><select class="ti" id="f_resp"><option value="">— Logística lo asigna —</option>'+team.filter(u=>u.rol==='logistica'||u.rol==='admin').map(u=>'<option value="'+esc(u.email)+'">'+esc(u.nombre||u.email)+'</option>').join('')+'</select>'+
       '<label class="fl">Detalle</label><textarea class="ti" id="f_notas" placeholder="Describe el reclamo / confronta y qué necesitas…"></textarea>';
-  } else if(tipo==='cambio_tarifa'){ // logística publica
-    body=transpSel+
-      '<div class="row2"><div><label class="fl">Origen</label><input class="ti" id="f_origen" placeholder="Ruta origen"></div>'+
-      '<div><label class="fl">Destino</label><input class="ti" id="f_destino" placeholder="Ruta destino"></div></div>'+
-      '<label class="fl">Detalle del cambio</label><textarea class="ti" id="f_notas" placeholder="Tarifa anterior → nueva, vigencia, motivo…"></textarea>';
+  } else if(tipo==='cambio_tarifa'){ // Logística -> vendedores/compradores afectados
+    const reps=team.filter(u=>u.es_salesrep).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    body='<label class="fl">Enviar a (vendedores / compradores)</label><div class="choices" id="f_dest">'+
+      reps.map(u=>'<div class="choice" data-em="'+esc(u.email)+'">'+esc(u.nombre||u.email)+'</div>').join('')+'</div>'+
+      '<label class="fl">Transacciones involucradas</label><input class="ti" id="f_ref" placeholder="Ej. GF-2601123, GF-2601124 (sepáralas con comas)">'+
+      '<div class="note">El destinatario podrá abrir cada transacción en NetSuite para ver el efecto en su margen y ajustar el precio de venta si hace falta.</div>'+
+      '<div class="row2"><div><label class="fl">Origen (opcional)</label><input class="ti" id="f_origen" placeholder="Ruta origen"></div>'+
+      '<div><label class="fl">Destino (opcional)</label><input class="ti" id="f_destino" placeholder="Ruta destino"></div></div>'+
+      '<label class="fl">Detalle del cambio</label><textarea class="ti" id="f_notas" placeholder="Tarifa anterior → nueva, vigencia, motivo, impacto…"></textarea>';
   }
 
   v.innerHTML=backBtn()+'<div class="hero"><div class="eyebrow">Nueva solicitud</div><div class="rule"></div><h1>'+esc(TIPOS[tipo].t)+'</h1></div>'+
@@ -395,13 +402,19 @@ function renderForm(v,tipo){
   v.querySelectorAll('[data-vm]').forEach(c=>c.addEventListener('click',()=>{F.volumen_modo=c.dataset.vm;v.querySelectorAll('[data-vm]').forEach(x=>x.classList.toggle('on',x===c));
     const uni=$('#f_vuni'); if(uni)uni.value=(c.dataset.vm==='transportes'?'transportes':'m³');}));
   const oc=$('#f_origen'),dc=$('#f_destino'); if(oc)oc.addEventListener('input',()=>updateRoute(tipo)); if(dc)dc.addEventListener('input',()=>updateRoute(tipo));
+  const fd=$('#f_dest'); if(fd)fd.querySelectorAll('.choice').forEach(c=>c.addEventListener('click',()=>{
+    const em=c.dataset.em,i=F.destinatarios.indexOf(em);
+    if(i>=0)F.destinatarios.splice(i,1); else F.destinatarios.push(em);
+    c.classList.toggle('on'); updateRoute(tipo); }));
   $('#f_cancel').addEventListener('click',()=>{view={name:'home'};render();});
   $('#f_send').addEventListener('click',()=>enviar(tipo));
   updateRoute(tipo);
 }
 function updateRoute(tipo){
-  const asg=matchRuteo(tipo,F.transporte,F.region);
   const box=$('#f_route'); if(!box)return;
+  if(tipo==='cambio_tarifa'){ box.classList.toggle('hidden',!F.destinatarios.length);
+    if(F.destinatarios.length) box.innerHTML='Se notificará a <b>'+F.destinatarios.map(nombreDe).join(', ')+'</b> <span style="color:var(--faint)">· con copia a Jorge y Nina</span>'; return; }
+  const asg=matchRuteo(tipo,F.transporte,F.region);
   if(asg.length){ box.classList.remove('hidden');
     box.innerHTML='Esta solicitud se enviará a <b>'+asg.map(nombreDe).join(', ')+'</b>'+(me&&['nina@naturaltrade.ca','jorge@naturaltrade.ca'].includes(me.email)?'':'<span style="color:var(--faint)"> · con copia a Jorge y Nina</span>'); }
   else if(tipo==='status_reclamo'){ box.classList.remove('hidden'); box.innerHTML='Logística lo asignará a quien llevó el tema.'; }
@@ -415,11 +428,12 @@ function updateRoute(tipo){
 async function enviar(tipo){
   const val=id=>{const e=$(id);return e?e.value.trim():'';};
   const titulo=val('#f_titulo')||TIPOS[tipo].t;
-  if((tipo==='cotizacion'||tipo==='status_embarque'||tipo==='cambio_tarifa') && !F.transporte){ toast('Elige el tipo de transporte'); return; }
+  if((tipo==='cotizacion'||tipo==='status_embarque') && !F.transporte){ toast('Elige el tipo de transporte'); return; }
+  if(tipo==='cambio_tarifa' && !F.destinatarios.length){ toast('Elige al menos un destinatario'); return; }
   const btn=$('#f_send'); btn.disabled=true; btn.textContent='Enviando…';
-  const asignados=matchRuteo(tipo,F.transporte,F.region);
-  let asg=asignados.slice();
+  let asg=matchRuteo(tipo,F.transporte,F.region).slice();
   if(tipo==='status_reclamo'){ const r=val('#f_resp'); if(r)asg=[r]; }
+  if(tipo==='cambio_tarifa'){ asg=F.destinatarios.slice(); }
   const estado=asg.length?'asignada':'emitida';
   const { data:tk, error }=await sb.from('lg_ticket').insert({
     tipo, titulo, descripcion:val('#f_notas'), solicitante_email:me.email,
@@ -468,7 +482,7 @@ async function renderTicket(v,id){
       '<div class="card2"><div class="eyebrow" style="margin-bottom:10px">Detalle</div><div class="deta">'+
         kv('Solicitante',nombreDe(t.solicitante_email))+
         kv('Responsable(s)',(t.asignados&&t.asignados.length)?t.asignados.map(nombreDe).join(', '):'por asignar')+
-        kv('Referencia',t.referencia)+kv('Zona',t.region?ZONAS[t.region]:'')+det+
+        (t.referencia?('<div class="kv"><span class="k">'+(t.tipo==='cambio_tarifa'?'Transacciones':'Referencia')+'</span><span>'+(t.tipo==='cambio_tarifa'?nsTxLinks(t.referencia):esc(t.referencia))+'</span></div>'):'')+kv('Zona',t.region?ZONAS[t.region]:'')+det+
         (t.descripcion?('<div class="kv"><span class="k">Descripción</span><span>'+esc(t.descripcion)+'</span></div>'):'')+
         kv('Creada',fmtFecha(t.creado_en))+
       '</div>'+
